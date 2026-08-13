@@ -3,9 +3,7 @@ import 'package:window_manager/window_manager.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:tray_manager/tray_manager.dart';
 import 'package:audioplayers/audioplayers.dart';
-
-import 'data.dart'; // Importa myData.somBase64 e myData.gifBase64
-
+import 'data.dart';
 import 'dart:convert';
 import 'dart:async';
 import 'dart:math';
@@ -72,31 +70,27 @@ class _MyAppState extends State<MyApp> with TrayListener {
 
   Future<void> _configurarSystemTray() async {
     try {
-      // Pega o caminho do diretório do executável (build/windows/x64/runner/Debug/ ou pasta de release)
-      final String exePath = Platform.resolvedExecutable;
-      final String exeDir = Directory(exePath).parent.path;
-
-      // No modo debug, o app roda em build/windows/x64/runner/Debug, então subimos os níveis para achar a pasta do projeto
-      // Ou testamos o caminho direto de recursos nativos do Windows:
-      String iconPath = '$exeDir/resources/app_icon.ico';
-
-      if (!File(iconPath).existsSync()) {
-        // Fallback para quando estiver rodando via `flutter run` no VS Code
-        iconPath =
-            Directory.current.path + r'\windows\runner\resources\app_icon.ico';
-      }
-
-      await trayManager.setIcon(iconPath);
+      // 'app_icon' faz a Win32 API puxar o ícone nativo embutido no .exe (Runner.rc)
+      await trayManager.setIcon('app_icon');
     } catch (e) {
       debugPrint('Erro ao carregar ícone da tray: $e');
     }
 
     Menu menu = Menu(
       items: [
-        MenuItem(key: 'abrir_config', label: 'Abrir Configurações'),
-        MenuItem(key: 'testar_susto', label: 'Testar Susto Agora'),
+        MenuItem(
+          key: 'abrir_config',
+          label: 'Abrir Configurações',
+        ),
+        MenuItem(
+          key: 'testar_susto',
+          label: 'Testar Susto Agora',
+        ),
         MenuItem.separator(),
-        MenuItem(key: 'fechar_app', label: 'Sair do Programa'),
+        MenuItem(
+          key: 'fechar_app',
+          label: 'Sair do Programa',
+        ),
       ],
     );
     await trayManager.setContextMenu(menu);
@@ -180,7 +174,7 @@ class _MyAppState extends State<MyApp> with TrayListener {
       debugPrint('Erro ao tocar som: $e');
     }
 
-    // 4. Esconde após 2 segundos
+    // 4. Esconde após 1 segundo
     _timerEsconder?.cancel();
     _timerEsconder = Timer(const Duration(seconds: 1), () async {
       if (!mounted) return;
@@ -206,7 +200,7 @@ class _MyAppState extends State<MyApp> with TrayListener {
             : const Color(0x01111111),
         body: Stack(
           children: [
-            // Camada 1: Painel de configurações (só desenha se estiver ativo)
+            // Camada 1: Painel de configurações
             if (_modoConfiguracao) _buildPainelUI(),
 
             // Camada 2: O susto (fica por cima de tudo sempre que _mostrarFoxy for true)
