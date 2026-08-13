@@ -3,7 +3,9 @@ import 'package:window_manager/window_manager.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:tray_manager/tray_manager.dart';
 import 'package:audioplayers/audioplayers.dart';
+
 import 'data.dart';
+
 import 'dart:convert';
 import 'dart:async';
 import 'dart:math';
@@ -70,27 +72,30 @@ class _MyAppState extends State<MyApp> with TrayListener {
 
   Future<void> _configurarSystemTray() async {
     try {
-      // 'app_icon' faz a Win32 API puxar o ícone nativo embutido no .exe (Runner.rc)
-      await trayManager.setIcon('app_icon');
+      // Detecta o diretório onde o .exe está rodando
+      final String exePath = Platform.resolvedExecutable;
+      final String exeDir = Directory(exePath).parent.path;
+
+      // Tenta obter o ícone que o Flutter copia para a pasta de dados/recursos no build
+      String iconPath = '$exeDir/data/flutter_assets/assets/app_icon.ico';
+
+      if (!File(iconPath).existsSync()) {
+        // Fallback para ambiente local de desenvolvimento (debug via VS Code)
+        iconPath =
+            '${Directory.current.path}\\windows\\runner\\resources\\app_icon.ico';
+      }
+
+      await trayManager.setIcon(iconPath);
     } catch (e) {
       debugPrint('Erro ao carregar ícone da tray: $e');
     }
 
     Menu menu = Menu(
       items: [
-        MenuItem(
-          key: 'abrir_config',
-          label: 'Abrir Configurações',
-        ),
-        MenuItem(
-          key: 'testar_susto',
-          label: 'Testar Susto Agora',
-        ),
+        MenuItem(key: 'abrir_config', label: 'Abrir Configurações'),
+        MenuItem(key: 'testar_susto', label: 'Testar Susto Agora'),
         MenuItem.separator(),
-        MenuItem(
-          key: 'fechar_app',
-          label: 'Sair do Programa',
-        ),
+        MenuItem(key: 'fechar_app', label: 'Sair do Programa'),
       ],
     );
     await trayManager.setContextMenu(menu);
