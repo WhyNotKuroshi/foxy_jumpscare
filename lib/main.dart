@@ -72,20 +72,8 @@ class _MyAppState extends State<MyApp> with TrayListener {
 
   Future<void> _configurarSystemTray() async {
     try {
-      // Detecta o diretório onde o .exe está rodando
-      final String exePath = Platform.resolvedExecutable;
-      final String exeDir = Directory(exePath).parent.path;
-
-      // Tenta obter o ícone que o Flutter copia para a pasta de dados/recursos no build
-      String iconPath = '$exeDir/data/flutter_assets/assets/app_icon.ico';
-
-      if (!File(iconPath).existsSync()) {
-        // Fallback para ambiente local de desenvolvimento (debug via VS Code)
-        iconPath =
-            '${Directory.current.path}\\windows\\runner\\resources\\app_icon.ico';
-      }
-
-      await trayManager.setIcon(iconPath);
+      // Define o ícone diretamente da pasta de assets declarada no pubspec.yaml
+      await trayManager.setIcon('assets/app_icon.ico');
     } catch (e) {
       debugPrint('Erro ao carregar ícone da tray: $e');
     }
